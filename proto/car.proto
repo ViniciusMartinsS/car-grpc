@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "github.com/ViniciusMartinss/car-grpc";
+
+package car;
+
+service CarService {
+  rpc Create(CarRequest) returns (CarResponse) {}
+}
+
+message CarRequest {
+  string brand = 1;
+  string model = 2;
+  string fuelType = 3;
+  int32 year = 4;
+}
+
+message CarResponse {
+  string uuid = 1;
+}
