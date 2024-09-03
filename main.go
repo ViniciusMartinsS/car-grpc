@@ -3,9 +3,11 @@ package main
 import (
 	"github.com/ViniciusMartinss/car-grpc/repository"
 	"github.com/ViniciusMartinss/car-grpc/server"
-	"google.golang.org/grpc"
 	"log"
 	"net"
+
+	"github.com/redis/go-redis/v9"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -14,7 +16,11 @@ func main() {
 		log.Fatalf("failed to listen on port 50051: %v", err)
 	}
 
-	r := repository.NewCar()
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+
+	r := repository.NewCar(redisClient)
 	s := grpc.NewServer()
 	server.NewCar(s, r).Register()
 

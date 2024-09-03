@@ -5,8 +5,9 @@ import (
 	"errors"
 	pb "github.com/ViniciusMartinss/car-grpc/proto"
 	"github.com/ViniciusMartinss/car-grpc/repository"
-	"google.golang.org/grpc"
 	"time"
+
+	"google.golang.org/grpc"
 )
 
 type Server struct {
@@ -44,14 +45,20 @@ func (s *Server) Create(ctx context.Context, in *pb.CarRequest) (*pb.CarResponse
 		return nil, errors.New("invalid year")
 	}
 
+	uuid, err := s.r.Save(
+		ctx,
+		repository.Content{
+			Brand:    in.Brand,
+			Model:    in.Model,
+			FuelType: in.FuelType,
+			Year:     in.Year,
+		},
+	)
+	if err != nil {
+		return nil, errors.New("err to save on the db: " + err.Error())
+	}
+
 	return &pb.CarResponse{
-		Uuid: s.r.Save(
-			repository.Content{
-				Brand:    in.Brand,
-				Model:    in.Model,
-				FuelType: in.FuelType,
-				Year:     in.Year,
-			},
-		),
+		Uuid: uuid,
 	}, nil
 }
