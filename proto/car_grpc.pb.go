@@ -20,13 +20,15 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	CarService_Create_FullMethodName = "/car.CarService/Create"
+	CarService_List_FullMethodName   = "/car.CarService/List"
 )
 
-// CarServiceClient is the client API for CarService repository.
+// CarServiceClient is the client API for CarService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CarServiceClient interface {
-	Create(ctx context.Context, in *CarRequest, opts ...grpc.CallOption) (*CarResponse, error)
+	Create(ctx context.Context, in *CarCreateRequest, opts ...grpc.CallOption) (*CarCreateResponse, error)
+	List(ctx context.Context, in *CarListRequest, opts ...grpc.CallOption) (*CarListResponse, error)
 }
 
 type carServiceClient struct {
@@ -37,9 +39,9 @@ func NewCarServiceClient(cc grpc.ClientConnInterface) CarServiceClient {
 	return &carServiceClient{cc}
 }
 
-func (c *carServiceClient) Create(ctx context.Context, in *CarRequest, opts ...grpc.CallOption) (*CarResponse, error) {
+func (c *carServiceClient) Create(ctx context.Context, in *CarCreateRequest, opts ...grpc.CallOption) (*CarCreateResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CarResponse)
+	out := new(CarCreateResponse)
 	err := c.cc.Invoke(ctx, CarService_Create_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -47,11 +49,22 @@ func (c *carServiceClient) Create(ctx context.Context, in *CarRequest, opts ...g
 	return out, nil
 }
 
-// CarServiceServer is the server API for CarService repository.
+func (c *carServiceClient) List(ctx context.Context, in *CarListRequest, opts ...grpc.CallOption) (*CarListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CarListResponse)
+	err := c.cc.Invoke(ctx, CarService_List_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CarServiceServer is the server API for CarService service.
 // All implementations must embed UnimplementedCarServiceServer
 // for forward compatibility.
 type CarServiceServer interface {
-	Create(context.Context, *CarRequest) (*CarResponse, error)
+	Create(context.Context, *CarCreateRequest) (*CarCreateResponse, error)
+	List(context.Context, *CarListRequest) (*CarListResponse, error)
 	mustEmbedUnimplementedCarServiceServer()
 }
 
@@ -62,13 +75,16 @@ type CarServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCarServiceServer struct{}
 
-func (UnimplementedCarServiceServer) Create(context.Context, *CarRequest) (*CarResponse, error) {
+func (UnimplementedCarServiceServer) Create(context.Context, *CarCreateRequest) (*CarCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (UnimplementedCarServiceServer) List(context.Context, *CarListRequest) (*CarListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
 func (UnimplementedCarServiceServer) mustEmbedUnimplementedCarServiceServer() {}
 func (UnimplementedCarServiceServer) testEmbeddedByValue()                    {}
 
-// UnsafeCarServiceServer may be embedded to opt out of forward compatibility for this repository.
+// UnsafeCarServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to CarServiceServer will
 // result in compilation errors.
 type UnsafeCarServiceServer interface {
@@ -87,7 +103,7 @@ func RegisterCarServiceServer(s grpc.ServiceRegistrar, srv CarServiceServer) {
 }
 
 func _CarService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CarRequest)
+	in := new(CarCreateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -99,12 +115,30 @@ func _CarService_Create_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: CarService_Create_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CarServiceServer).Create(ctx, req.(*CarRequest))
+		return srv.(CarServiceServer).Create(ctx, req.(*CarCreateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// CarService_ServiceDesc is the grpc.ServiceDesc for CarService repository.
+func _CarService_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CarListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CarServiceServer).List(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CarService_List_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CarServiceServer).List(ctx, req.(*CarListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CarService_ServiceDesc is the grpc.ServiceDesc for CarService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CarService_ServiceDesc = grpc.ServiceDesc{
@@ -114,6 +148,10 @@ var CarService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Create",
 			Handler:    _CarService_Create_Handler,
+		},
+		{
+			MethodName: "List",
+			Handler:    _CarService_List_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

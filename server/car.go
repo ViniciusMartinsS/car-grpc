@@ -28,7 +28,7 @@ func (s *Server) Register() {
 	pb.RegisterCarServiceServer(s.gs, s)
 }
 
-func (s *Server) Create(ctx context.Context, in *pb.CarRequest) (*pb.CarResponse, error) {
+func (s *Server) Create(ctx context.Context, in *pb.CarCreateRequest) (*pb.CarCreateResponse, error) {
 	if in == nil {
 		return nil, errors.New("missing body")
 	}
@@ -58,7 +58,33 @@ func (s *Server) Create(ctx context.Context, in *pb.CarRequest) (*pb.CarResponse
 		return nil, errors.New("err to save on the db: " + err.Error())
 	}
 
-	return &pb.CarResponse{
+	return &pb.CarCreateResponse{
 		Uuid: uuid,
+	}, nil
+}
+
+func (s *Server) List(ctx context.Context, _ *pb.CarListRequest) (*pb.CarListResponse, error) {
+	cars, err := s.r.List(ctx)
+	if err != nil {
+		return nil, errors.New("err to fetch from the db: " + err.Error())
+	}
+
+	rCars := make([]*pb.CarListResponseContent, 0)
+	for _, c := range cars {
+		rCars = append(
+			rCars,
+			&pb.CarListResponseContent{
+				Uuid:     c.UUID,
+				Brand:    c.Brand,
+				Model:    c.Model,
+				FuelType: c.FuelType,
+				Year:     c.Year,
+			},
+		)
+	}
+
+	return &pb.CarListResponse{
+		Status: true,
+		Cars:   rCars,
 	}, nil
 }
